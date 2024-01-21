@@ -23,6 +23,11 @@ class Player {
     const projectile = this.game.getProjectile();
     if (projectile) projectile.start(this.x + this.width * 0.5, this.y);
   }
+  restart(){
+    this.x = this.game.width * 0.5 - this.width * 0.5;
+    this.y = this.game.height - this.height;
+    this.lives = 3;
+  }
 }
 
 class Projectile {
@@ -67,7 +72,8 @@ class Enemy {
     this.markedForDeletion = false;    
   }
   draw(context){
-    context.strokeRect(this.x, this.y , this.width, this.height);
+//    context.strokeRect(this.x, this.y , this.width, this.height);
+    context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height,this.x, this.y, this.width, this.height);
   }
   update(x, y){
     this.x = x + this.positionX;
@@ -75,11 +81,18 @@ class Enemy {
     //check collision enemies - projectiles
     this.game.projectilePool.forEach(projectile => {
       if (!projectile.free && this.game.checkCollision(this, projectile)){
-        this.markedForDeletion = true;
+        //this.markedForDeletion = true;
+        this.hit(1);
         projectile.reset();
-        if(!this.game.gameOver) this.game.score++;
       }
     });
+    if (this.lives < 1){
+      this.frameX++;
+      if (this.frameX > this.maxFrame){
+        this.markedForDeletion = true;
+        if(!this.game.gameOver) this.game.score += this.maxLives;
+      }
+    }
     // check collision enemies - player
     if (this.game.checkCollision(this, this.game.player)){
       this.markedForDeletion = true;
@@ -93,6 +106,21 @@ class Enemy {
       this.markedForDeletion = true;
     }
   }
+  hit(damage){
+    this.lives -= damage;
+  }
+}
+
+class Beetlemorph extends Enemy {
+  constructor(game, positionX, positionY){
+    super(game, positionX, positionY);
+    this.image = document.getElementById('beetlemorph');
+    this.frameX = 0;
+    this.maxFrame = 2;
+    this.frameY = Math.floor(Math.random() * 4);
+    this.lives = 1;
+    this.maxLives = this.lives;
+  }
 }
 
 class Wave {
@@ -100,9 +128,9 @@ class Wave {
     this.game = game;
     this.width = this.game.columns * this.game.enemySize;
     this.height = this.game.rows * this.game.enemySize;
-    this.x = 0;
+    this.x = this.game.width * 0.5 - this.width * 0.5;
     this.y = -this.height;
-    this.speedX = 3;
+    this.speedX = Math.random() < 0.5 ? -1 : 1;
     this.speedY = 0;
     this.enemies = [];
     this.nextWaveTrigger = false;
@@ -128,7 +156,7 @@ class Wave {
       for (let x = 0; x < this.game.columns; x++){
         let enemyX = x * this.game.enemySize;
         let enemyY = y * this.game.enemySize;
-        this.enemies.push(new Enemy(this.game, enemyX,enemyY));
+        this.enemies.push(new Beetlemorph(this.game, enemyX,enemyY));
       }
     }
   }
@@ -145,6 +173,7 @@ class Game {
     this.projectilePool = [];
     this.numberOfProjectiles = 10;
     this.createProjectiles();
+    this.fired = false;
 
     this.columns = 5;
     this.rows = 11;
@@ -159,12 +188,14 @@ class Game {
 
     //event listenners
     window.addEventListener('keydown', e => {
+      if (e.key === '1' && !this.fired) this.player.shoot();
+      this.fired = true;
       if (this.keys.indexOf(e.key) === -1) this.keys.push(e.key);
-      if (e.key === '1') this.player.shoot();
-
+      if (e.key === 'r' && this.gameOver) this.restart();
       
     });
     window.addEventListener('keyup', e => {
+      this.fired = false;
       const index = this.keys.indexOf(e.key);
       if (index > -1) this.keys.splice(index, 1);
     });
@@ -221,10 +252,10 @@ class Game {
     }
     if (this.gameOver){
       context.textAlign = 'center';
-      context.font = '100px Impact';
-      context.fillText('GAME OVER!', this.width * 0.5, this.height * 0.5);
-      context.font = '20px Impact';
-      context.fillText('Press R to restart!', this.width * 0.5, this.height * 0.5 + 40);
+      context.font = '100px phetsarath_ot';
+      context.fillText('!!!ສິ້ນສຸດເກມ!!!', this.width * 0.5, this.height * 0.5);
+      context.font = '20px phetsarath_ot';
+      context.fillText('ກົດປຸ່ມ R ເພື່ອເລີ່ມໃໝ່', this.width * 0.5, this.height * 0.5 + 50);
     }
     context.restore();
   }
@@ -235,6 +266,16 @@ class Game {
       this.rows++;
     }
     this.waves.push(new Wave(this));
+  }
+  restart(){
+    this.player.restart();
+    this.columns = 2;
+    this.rows = 2;
+    this.waves = [];
+    this.waves.push(new Wave(this));
+    this.waveCount = 1;
+    this.score = 0;
+    this.gameOver = false;
   }
 }
 

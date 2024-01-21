@@ -6,6 +6,7 @@ class Player {
     this.x = this.game.width * 0.5 - this.width * 0.5;
     this.y = this.game.height - this.height;
     this.speed = 10;
+    this.lives = 3;
   }
   draw(context){
     context.fillRect(this.x, this.y, this.width, this.height);
@@ -76,8 +77,21 @@ class Enemy {
       if (!projectile.free && this.game.checkCollision(this, projectile)){
         this.markedForDeletion = true;
         projectile.reset();
+        if(!this.game.gameOver) this.game.score++;
       }
-    })
+    });
+    // check collision enemies - player
+    if (this.game.checkCollision(this, this.game.player)){
+      this.markedForDeletion = true;
+      if (this.game.gameOver && this.game.score > 0) this.game.score--;
+      this.game.player.lives--;
+      if (this.game.player.lives < 1) this.game.gameOver = true;
+    }
+    //lose condition
+    if (this.y + this.height > this.game.height){
+      this.game.gameOver = true;
+      this.markedForDeletion = true;
+    }
   }
 }
 
@@ -91,6 +105,7 @@ class Wave {
     this.speedX = 3;
     this.speedY = 0;
     this.enemies = [];
+    this.nextWaveTrigger = false;
     this.create();
   }
   render(context){
@@ -131,12 +146,16 @@ class Game {
     this.numberOfProjectiles = 10;
     this.createProjectiles();
 
-    this.columns = 3;
-    this.rows = 7;
+    this.columns = 5;
+    this.rows = 11;
     this.enemySize = 60;
 
     this.waves = [];
     this.waves.push(new Wave(this));
+    this.waveCount = 1;
+
+    this.score = 0;
+    this.gameOver = false;
 
     //event listenners
     window.addEventListener('keydown', e => {
@@ -152,7 +171,7 @@ class Game {
 
   }
   render(context){
-    //console.log(this.width,this.height)
+    this.drawStatusText(context);
     this.player.draw(context);
     this.player.update();
     this.projectilePool.forEach(projectile => {
@@ -161,6 +180,12 @@ class Game {
     })
     this.waves.forEach(wave => {
     wave.render(context);
+    if (wave.enemies.length < 1 && !wave.nextWaveTrigger && !this.gameOver){
+      this.newWave();
+      this.waveCount++;
+      wave.nextWaveTrigger = true;
+      this.player.lives++;
+    }
     })
   }
   //create projectiles object pool
@@ -184,6 +209,33 @@ class Game {
       a.y + a.height > b.y
     )  
   }
+  drawStatusText(context){
+    context.save();
+    context.shadowOffsetX = 2;
+    context.shadowOffsetY = 2;
+    context.shadowColor = 'black';
+    context.fillText('Score : ' + this.score, 10, 40);
+    context.fillText('Wave : ' + this.waveCount, 10, 80);
+    for (let i = 0; i < this.player.lives; i++){
+      context.fillRect(20 +10 * i,100,5,20);
+    }
+    if (this.gameOver){
+      context.textAlign = 'center';
+      context.font = '100px Impact';
+      context.fillText('GAME OVER!', this.width * 0.5, this.height * 0.5);
+      context.font = '20px Impact';
+      context.fillText('Press R to restart!', this.width * 0.5, this.height * 0.5 + 40);
+    }
+    context.restore();
+  }
+  newWave(){
+    if (Math.random() < 0.5 && this.columns * this.enemySize < this.width * 0.8){
+      this.columns++;
+    } else if (this.rows * this.enemySize < this.height * 0.6){
+      this.rows++;
+    }
+    this.waves.push(new Wave(this));
+  }
 }
 
 window.addEventListener('load', function(){
@@ -194,6 +246,7 @@ window.addEventListener('load', function(){
   ctx.fillStyle = 'white';
   ctx.strokeStyle = 'white';
   ctx.lineWidth = 5;
+  ctx.font = '30px Impact';
 
   const game = new Game(canvas);
 

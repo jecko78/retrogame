@@ -80,14 +80,14 @@ class Enemy {
     this.y = y + this.positionY;
     //check collision enemies - projectiles
     this.game.projectilePool.forEach(projectile => {
-      if (!projectile.free && this.game.checkCollision(this, projectile)){
+      if (!projectile.free && this.game.checkCollision(this, projectile) && this.lives > 0){
         //this.markedForDeletion = true;
         this.hit(1);
         projectile.reset();
       }
     });
     if (this.lives < 1){
-      this.frameX++;
+      if (this.game.spriteUpdate) this.frameX++;
       if (this.frameX > this.maxFrame){
         this.markedForDeletion = true;
         if(!this.game.gameOver) this.game.score += this.maxLives;
@@ -176,12 +176,16 @@ class Game {
     this.fired = false;
 
     this.columns = 2;
-    this.rows = 2;
+    this.rows = 12;
     this.enemySize = 80;
 
     this.waves = [];
     this.waves.push(new Wave(this));
     this.waveCount = 1;
+
+    this.spriteUpdate = false;
+    this.spriteTimer = 0;
+    this.spriteInterval = 240;
 
     this.score = 0;
     this.gameOver = false;
@@ -194,6 +198,15 @@ class Game {
       if (e.key === 'r' && this.gameOver) this.restart();
       
     });
+
+     window.addEventListener('click', e => {
+      if (e.target) this.player.shoot();
+      this.fired = true;
+      //if (this.keys.indexOf(e.key) === -1) this.keys.push(e.key);
+      if (e.target && this.gameOver) this.restart();
+      
+    });
+
     window.addEventListener('keyup', e => {
       this.fired = false;
       const index = this.keys.indexOf(e.key);
@@ -201,7 +214,16 @@ class Game {
     });
 
   }
-  render(context){
+  render(context, deltaTime){
+    //console.log(deltaTime);
+    //sprite deltaTime
+    if (this.spriteTimer > this.spriteInterval){
+      this.spriteUpdate = true;
+      this.spriteTimer = 0;
+    } else {
+      this.spriteUpdate = false;
+      this.spriteTimer += deltaTime;
+    }
     this.drawStatusText(context);
     this.player.draw(context);
     this.player.update();
@@ -296,10 +318,13 @@ window.addEventListener('load', function(){
   const game = new Game(canvas);
 
   //console.log(game);
-  function animate(){
+  let lastTime = 0;
+  function animate(timeStamp){
+    const deltaTime = timeStamp - lastTime;
+    lastTime = timeStamp;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    game.render(ctx);
+    game.render(ctx, deltaTime);
     requestAnimationFrame(animate);
   }
-  animate();
+  animate(0);
 });

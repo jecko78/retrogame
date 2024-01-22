@@ -175,8 +175,8 @@ class Game {
     this.createProjectiles();
     this.fired = false;
 
-    this.columns = 5;
-    this.rows = 11;
+    this.columns = 2;
+    this.rows = 2;
     this.enemySize = 80;
 
     this.waves = [];

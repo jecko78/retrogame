@@ -245,10 +245,14 @@ class Game {
     context.shadowOffsetX = 2;
     context.shadowOffsetY = 2;
     context.shadowColor = 'black';
-    context.fillText('Score : ' + this.score, 10, 40);
-    context.fillText('Wave : ' + this.waveCount, 10, 80);
+    context.font = '20px phetsarath_ot';
+    context.fillText('ພັດທະນາໂດຍ', 480, 45);
+    context.fillText('Jecko', 500, 80);
+    context.font = '30px phetsarath_ot';
+    context.fillText('ຄະແນນ : ' + this.score, 10, 40);
+    context.fillText('ຊຸດທີ : ' + this.waveCount, 10, 80);
     for (let i = 0; i < this.player.lives; i++){
-      context.fillRect(20 +10 * i,100,5,20);
+      context.fillRect(10 +10 * i,115,5,20);
     }
     if (this.gameOver){
       context.textAlign = 'center';

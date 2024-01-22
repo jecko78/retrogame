@@ -17,7 +17,7 @@ url('phetsarath_ot.svg#Phetsarath_OT') format('svg');
 font-weight: normal;
 font-style: normal; 
 }
-#beetlemorph
+#beetlemorph, #player, #player_jets
 {
   display: none;
 }

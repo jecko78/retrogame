@@ -34,10 +34,23 @@ class Player {
     } else {
       this.jetsFrame = 1;
     }
+
+    window.addEventListener('mousemove', e => {
+     // console.log(e.target);
+     if (e.target){
+      this.x += this.speed;
+     } else {
+      this.x -+ this.speed;
+     }
+    });
+    
   //horizontal boundaries
   if (this.x < -this.width * 0.5) this.x = -this.width * 0.5;
   else if (this.x > this.game.width - this.width * 0.5) this.x = this.game.width - this.width * 0.5;
   }
+
+
+  
   shoot(){
     const projectile = this.game.getProjectile();
     if (projectile) projectile.start(this.x + this.width * 0.5, this.y);

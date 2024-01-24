@@ -11,6 +11,8 @@ class Player {
     this.jets_image = document.getElementById('player_jets');
     this.frameX = 0;
     this.jetsFrame = 1;
+    this.sound = new Audio();
+    this.sound.src = 'ice_attack.wav';
   }
   draw(context){
     //context.fillRect(this.x, this.y, this.width, this.height);
@@ -26,6 +28,7 @@ class Player {
   update(){
   //horizontal movement
     if (this.game.keys.indexOf('ArrowLeft') > -1) {
+      //this.sound.play();
       this.x -= this.speed;
       this.jetsFrame = 0;
     } else if (this.game.keys.indexOf('ArrowRight') > -1) {
@@ -39,6 +42,7 @@ class Player {
   else if (this.x > this.game.width - this.width * 0.5) this.x = this.game.width - this.width * 0.5;
   }
   shoot(){
+    this.sound.play();
     const projectile = this.game.getProjectile();
     if (projectile) projectile.start(this.x + this.width * 0.5, this.y);
   }

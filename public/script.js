@@ -300,6 +300,7 @@ class Game {
     context.font = '20px phetsarath_ot';
     context.fillText('ພັດທະນາໂດຍ', 480, 45);
     context.fillText('Jecko', 500, 80);
+    context.fillText('ກົດເລກ1 ເພື່ອຍິງສັດຕູ', 10, 480);
     context.font = '30px phetsarath_ot';
     context.fillText('ຄະແນນ : ' + this.score, 10, 40);
     context.fillText('ຊຸດທີ : ' + this.waveCount, 10, 80);
